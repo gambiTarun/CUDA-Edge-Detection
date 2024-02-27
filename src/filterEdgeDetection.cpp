@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
     }
 
     // Load images and process them
-    std::string basePath = "data/sequences/";
+    std::string basePath = "data/faces/";
     std::cout << "basePath: " << basePath << std::endl;
 
     int numFolders = 10; // Default value
