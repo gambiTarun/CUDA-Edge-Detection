@@ -82,7 +82,7 @@ void processSequence(const std::vector<std::string>& sequence)
             cudaError_t code = cudaGetLastError();
             if (code != cudaSuccess)
             {
-                std::cerr << "Cuda status: " << cudaGetErrorString(code) << std::endl;
+                // std::cerr << "Cuda status: " << cudaGetErrorString(code) << std::endl;
             }
 
             // // run box filter
@@ -121,7 +121,6 @@ void processSequence(const std::vector<std::string>& sequence)
             nppiFree(oDeviceSrc.data());
             nppiFree(oDeviceDst.data());
 
-            // exit(EXIT_SUCCESS);
         }
         catch (npp::Exception &rException)
         {
@@ -175,33 +174,31 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // Load images and process them
     std::string basePath = "data/sequences/";
-
     std::cout << "basePath: " << basePath << std::endl;
 
-    for (int i=1;i<=10;i++)
-    {   
-        std::vector<std::string> file_sequence;
-        for(int j=1;j<=10;j++)
+    int numFolders = 10; // Default value
+    if(checkCmdLineFlag(argc, (const char **)argv, "-n"))
+    {
+        numFolders = std::atoi(argv[2]);
+        if(numFolders > 10)
         {
-            // std::string filename = basePath + sequence + ((sequence == "motion") ? std::format("{:02d}", i) + ".512.tiff" : std::format(".{:02d}.tiff", i));
-            // std::ostringstream filenameStream;
-            // filenameStream << basePath << sequence;
-            // if(sequence == "motion")
-            // {
-            //     filenameStream << std::setw(2) << std::setfill('0') << i << ".512.tiff";
-            // }
-            // else
-            // {
-            //     filenameStream << "." << std::setw(2) << std::setfill('0') << i << ".tiff";
-            // }
-            std::string filename = basePath + "s" + std::to_string(i) + "/" + std::to_string(j) + ".pgm";
-            std::cout << "filename: " << filename << std::endl;
+            std::cerr << "Invalid number of folders. Using the default value of 10." << std::endl;
+            numFolders = 10;
+        }
+    }
+    std::cout << "num folders: " << numFolders << std::endl;
 
+    for (int i = 1; i <= numFolders; ++i)
+    {
+        std::vector<std::string> file_sequence;
+        for (int j = 1; j <= 10; ++j)
+        {
+            std::string filename = basePath + "s" + std::to_string(i) + "/" + std::to_string(j) + ".pgm";
             std::ifstream infile(filename, std::ifstream::in);
             if (infile.good())
             {
-                std::cout << "filename: " << filename << std::endl;
                 file_sequence.push_back(filename);
             }
         }
@@ -209,50 +206,5 @@ int main(int argc, char *argv[])
         processSequence(file_sequence);
     }
 
-    // processImageBatch(sequence);
-
-//     int file_errors = 0;
-//     std::ifstream infile(sFilename.data(), std::ifstream::in);
-
-//     if (infile.good())
-//     {
-//       std::cout << "boxFilterNPP opened: <" << sFilename.data()
-//                 << "> successfully!" << std::endl;
-//       file_errors = 0;
-//       infile.close();
-//     }
-//     else
-//     {
-//       std::cout << "boxFilterNPP unable to open: <" << sFilename.data() << ">"
-//                 << std::endl;
-//       file_errors++;
-//       infile.close();
-//     }
-
-//     if (file_errors > 0)
-//     {
-//       exit(EXIT_FAILURE);
-//     }
-
-//     std::string sResultFilename = sFilename;
-
-//     std::string::size_type dot = sResultFilename.rfind('.');
-
-//     if (dot != std::string::npos)
-//     {
-//       sResultFilename = sResultFilename.substr(0, dot);
-//     }
-
-//     sResultFilename += "_boxFilter.pgm";
-
-//     if (checkCmdLineFlag(argc, (const char **)argv, "output"))
-//     {
-//       char *outputFilePath;
-//       getCmdLineArgumentString(argc, (const char **)argv, "output",
-//                                &outputFilePath);
-//       sResultFilename = outputFilePath;
-//     }
-
-
-  return 0;
+    return 0;
 }

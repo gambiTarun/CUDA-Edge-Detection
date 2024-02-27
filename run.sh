@@ -6,9 +6,9 @@ make clean
 
 # Step 2: Compile the program using the Makefile
 echo "Compiling the program..."
-make all
+make build
 
 # Step 3: Run the compiled program
 # Replace 'YourExecutableName' with the actual name of the executable defined in your Makefile
 echo "Running the program..."
-./bin/filterEdgeDetection
+./bin/filterEdgeDetection "$@"
