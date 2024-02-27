@@ -4,10 +4,8 @@
 
 This project implements an edge detection algorithm using CUDA, allowing for efficient processing of images on NVIDIA GPUs. The core functionality is encapsulated in a CUDA program that applies an edge detection filter to input images, highlighting the edges and contours within those images.
 
-<div style="display: flex;">
-    <img src="./data/sequences/s1/1.pgm" alt="Original Image" style="float: center; width: 45%; margin-right: 5%;" />
-    <img src="./data/sequences/s1/1_processed.pgm" alt="Processed Image" style="float: center; width: 45%; margin-right: 5%;" />
-</div>
+![Original Image](./data/sequences/s1/1.pgm) ![Processed Image](./data/sequences/s1/1_processed.pgm)
+
 
 ## Prerequisites
 
