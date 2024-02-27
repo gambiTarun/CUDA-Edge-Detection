@@ -153,34 +153,30 @@ int main(int argc, char *argv[])
 
     std::cout << "basePath: " << basePath << std::endl;
 
-    for(const std::string& sequence: {"6.1", "6.2", "6.3", "motion"})
+    for (int i=1;i<=10;i++)
     {   
         std::vector<std::string> file_sequence;
-        for(int i=1;i<=32;i++)
+        for(int j=1;j<=10;j++)
         {
             // std::string filename = basePath + sequence + ((sequence == "motion") ? std::format("{:02d}", i) + ".512.tiff" : std::format(".{:02d}.tiff", i));
-            std::ostringstream filenameStream;
-            filenameStream << basePath << sequence;
-            if(sequence == "motion")
-            {
-                filenameStream << std::setw(2) << std::setfill('0') << i << ".512.tiff";
-            }
-            else
-            {
-                filenameStream << "." << std::setw(2) << std::setfill('0') << i << ".tiff";
-            }
-            std::string filename = filenameStream.str();
+            // std::ostringstream filenameStream;
+            // filenameStream << basePath << sequence;
+            // if(sequence == "motion")
+            // {
+            //     filenameStream << std::setw(2) << std::setfill('0') << i << ".512.tiff";
+            // }
+            // else
+            // {
+            //     filenameStream << "." << std::setw(2) << std::setfill('0') << i << ".tiff";
+            // }
+            std::string filename = basePath + "s" + std::to_string(i) + "/" + std::to_string(j) + ".pgm";
+            std::cout << "filename: " << filename << std::endl;
 
             std::ifstream infile(filename, std::ifstream::in);
             if (infile.good())
             {
-                // std::cout<< "filename: " << filename << std::endl;
+                std::cout << "filename: " << filename << std::endl;
                 file_sequence.push_back(filename);
-            }
-            else
-            {
-                // std::cout << "file not found: " << filename << std::endl;
-                break;
             }
         }
 
