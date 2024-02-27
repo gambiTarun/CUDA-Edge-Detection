@@ -50,7 +50,7 @@ void processSequence(const std::vector<std::string>& sequence)
     {
         try
         {
-            std::cout << sFilename << std::endl;
+            // std::cout << sFilename << std::endl;
 
             int lastDotIndex = sFilename.rfind('.');
             std::string sResultFilename = sFilename.substr(0, lastDotIndex) + "_processed" + sFilename.substr(lastDotIndex);
@@ -79,10 +79,16 @@ void processSequence(const std::vector<std::string>& sequence)
             NppiPoint oAnchor = {oMaskSize.width / 2, oMaskSize.height / 2};
 
             // run box filter
-            NPP_CHECK_NPP(nppiFilterBoxBorder_8u_C1R(
-                oDeviceSrc.data(), oDeviceSrc.pitch(), oSrcSize, oSrcOffset,
-                oDeviceDst.data(), oDeviceDst.pitch(), oSizeROI, oMaskSize, oAnchor,
-                NPP_BORDER_REPLICATE));
+            NPP_CHECK_NPP(nppiFilterLaplace_8u_C1R(
+                oDeviceSrc.data(), oDeviceSrc.pitch(),
+                oDeviceDst.data(), oDeviceDst.pitch(),
+                oSizeROI, NPP_MASK_SIZE_5_X_5));
+
+            // NppStatus 4673 nppiFilterBoxBorder_8u_C1R(const Npp8u *pSrc, Npp32s nSrcStep, NppiSize oSrcSize, NppiPoint oSrcOffset, Npp8u *pDst, Npp32s nDstStep, NppiSize oSizeROI,
+            //                                           4674 NppiSize oMaskSize, NppiPoint oAnchor, NppiBorderType eBorderType);
+
+            // 9585 NppStatus 9586 nppiFilterLaplace_8u_C1R(const Npp8u *pSrc, Npp32s nSrcStep, Npp8u *pDst, Npp32s nDstStep, NppiSize oSizeROI,
+            //                                              9587 NppiMaskSize eMaskSize);
 
             // declare a host image for the result
             npp::ImageCPU_8u_C1 oHostDst(oDeviceDst.size());

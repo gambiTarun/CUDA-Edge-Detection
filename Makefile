@@ -336,7 +336,7 @@ else
 endif
 
 bin/filterEdgeDetection.o:src/filterEdgeDetection.cpp
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $< 
 
 bin/filterEdgeDetection: bin/filterEdgeDetection.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
