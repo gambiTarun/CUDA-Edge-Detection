@@ -1,6 +1,3 @@
-Here's a basic `INSTALL` file template tailored to your CUDA Edge Detection project, which you can adjust according to your specific setup and requirements. This file will guide users through the process of cloning the repository, setting up their environment, and building the project.
-
-```
 # CUDA Edge Detection - Installation Guide
 
 ## Overview
