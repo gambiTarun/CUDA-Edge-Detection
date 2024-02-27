@@ -277,7 +277,7 @@ ALL_LDFLAGS += $(addprefix -Xlinker ,$(LDFLAGS))
 ALL_LDFLAGS += $(addprefix -Xlinker ,$(EXTRA_LDFLAGS))
 
 # Common includes and paths for CUDA
-INCLUDES  := -I../Common
+INCLUDES  := -I./common
 LIBRARIES :=
 
 ################################################################################
@@ -303,7 +303,7 @@ endif
 
 ALL_CCFLAGS += --threads 0
 
-INCLUDES += -I../Common/UtilNPP
+INCLUDES += -I./common/utilnpp
 
 LIBRARIES += -lnppisu_static -lnppif_static -lnppc_static -lculibos -lfreeimage
 
@@ -324,9 +324,9 @@ endif
 ################################################################################
 
 # Target rules
-all: build
+all: clean build run
 
-build: filterEdgeDetection
+build: bin/filterEdgeDetection
 
 check.deps:
 ifeq ($(SAMPLE_ENABLED),0)
@@ -335,19 +335,19 @@ else
 	@echo "Sample is ready - all dependencies have been met"
 endif
 
-filterEdgeDetection.o:filterEdgeDetection.cpp
+bin/filterEdgeDetection.o:src/filterEdgeDetection.cpp
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-filterEdgeDetection: filterEdgeDetection.o
+bin/filterEdgeDetection: bin/filterEdgeDetection.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	$(EXEC) mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	$(EXEC) cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+	# $(EXEC) mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+	# $(EXEC) cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 
 run: build
 	$(EXEC) ./bin/filterEdgeDetection
 
 clean:
-	rm -f filterEdgeDetection filterEdgeDetection.o
-	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/filterEdgeDetection
+	rm -f ./bin/filterEdgeDetection ./bin/filterEdgeDetection.o
+	# rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/filterEdgeDetection
 
 clobber: clean

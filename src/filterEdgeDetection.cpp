@@ -5,108 +5,116 @@
 #pragma warning(disable : 4819)
 #endif
 
-#include "utilnpp/Exceptions.h"
-#include "utilnpp/ImageIO.h"
-#include "utilnpp/ImagesCPU.h"
-#include "utilnpp/ImagesNPP.h"
+#include "Exceptions.h"
+#include "ImageIO.h"
+#include "ImagesCPU.h"
+#include "ImagesNPP.h"
 
 #include <string.h>
 #include <fstream>
 #include <iostream>
-#include <format>
 #include <sstream>
+#include <vector>
+#include <iomanip> 
 
-// #include <cuda_runtime.h>
-// #include <npp.h>
+#include "cuda_runtime.h"
+#include <npp.h>
 
-// #include "helper_cuda.h"
-#include "common/helper_string.h"
+#include "helper_cuda.h"
+#include "helper_string.h"
 
-// bool printfNPPinfo(int argc, char *argv[])
-// {
-//   const NppLibraryVersion *libVer = nppGetLibVersion();
+bool printfNPPinfo(int argc, char *argv[])
+{
+  const NppLibraryVersion *libVer = nppGetLibVersion();
 
-//   printf("NPP Library Version %d.%d.%d\n", libVer->major, libVer->minor,
-//          libVer->build);
+  printf("NPP Library Version %d.%d.%d\n", libVer->major, libVer->minor,
+         libVer->build);
 
-//   int driverVersion, runtimeVersion;
-//   cudaDriverGetVersion(&driverVersion);
-//   cudaRuntimeGetVersion(&runtimeVersion);
+  int driverVersion, runtimeVersion;
+  cudaDriverGetVersion(&driverVersion);
+  cudaRuntimeGetVersion(&runtimeVersion);
 
-//   printf("  CUDA Driver  Version: %d.%d\n", driverVersion / 1000,
-//          (driverVersion % 100) / 10);
-//   printf("  CUDA Runtime Version: %d.%d\n", runtimeVersion / 1000,
-//          (runtimeVersion % 100) / 10);
+  printf("  CUDA Driver  Version: %d.%d\n", driverVersion / 1000,
+         (driverVersion % 100) / 10);
+  printf("  CUDA Runtime Version: %d.%d\n", runtimeVersion / 1000,
+         (runtimeVersion % 100) / 10);
 
-//   // Min spec is SM 1.0 devices
-//   bool bVal = checkCudaCapabilities(1, 0);
-//   return bVal;
-// }
+  // Min spec is SM 1.0 devices
+  bool bVal = checkCudaCapabilities(1, 0);
+  return bVal;
+}
 
-// void processImageBatch(const std::vector<std::vector<std::string>>& sequence)
-// {
-//     for(auto &sFilename:sequence)
-//     {
-        // try
-//          {
-//         // declare a host image object for an 8-bit grayscale image
-//         npp::ImageCPU_8u_C1 oHostSrc;
-//         // load gray-scale image from disk
-//         npp::loadImage(sFilename, oHostSrc);
-//         // declare a device image and copy construct from the host image,
-//         // i.e. upload host to device
-//         npp::ImageNPP_8u_C1 oDeviceSrc(oHostSrc);
+void processSequence(const std::vector<std::string>& sequence)
+{
+    for(const std::string& sFilename: sequence)
+    {
+        try
+        {
+            std::cout << sFilename << std::endl;
 
-//         // create struct with box-filter mask size
-//         NppiSize oMaskSize = {5, 5};
+            int lastDotIndex = sFilename.rfind('.');
+            std::string sResultFilename = sFilename.substr(0, lastDotIndex) + "_processed" + sFilename.substr(lastDotIndex);
 
-//         NppiSize oSrcSize = {(int)oDeviceSrc.width(), (int)oDeviceSrc.height()};
-//         NppiPoint oSrcOffset = {0, 0};
+            // declare a host image object for an 8-bit grayscale image
+            npp::ImageCPU_8u_C1 oHostSrc;
+            // load gray-scale image from disk
+            npp::loadImage(sFilename, oHostSrc);
 
-//         // create struct with ROI size
-//         NppiSize oSizeROI = {(int)oDeviceSrc.width(), (int)oDeviceSrc.height()};
-//         // allocate device image of appropriately reduced size
-//         npp::ImageNPP_8u_C1 oDeviceDst(oSizeROI.width, oSizeROI.height);
-//         // set anchor point inside the mask to (oMaskSize.width / 2,
-//         // oMaskSize.height / 2) It should round down when odd
-//         NppiPoint oAnchor = {oMaskSize.width / 2, oMaskSize.height / 2};
+            // declare a device image and copy construct from the host image,
+            // i.e. upload host to device
+            npp::ImageNPP_8u_C1 oDeviceSrc(oHostSrc);
 
-//         // run box filter
-//         NPP_CHECK_NPP(nppiFilterBoxBorder_8u_C1R(
-//             oDeviceSrc.data(), oDeviceSrc.pitch(), oSrcSize, oSrcOffset,
-//             oDeviceDst.data(), oDeviceDst.pitch(), oSizeROI, oMaskSize, oAnchor,
-//             NPP_BORDER_REPLICATE));
+            // create struct with box-filter mask size
+            NppiSize oMaskSize = {5, 5};
 
-//         // declare a host image for the result
-//         npp::ImageCPU_8u_C1 oHostDst(oDeviceDst.size());
-//         // and copy the device result data into it
-//         oDeviceDst.copyTo(oHostDst.data(), oHostDst.pitch());
+            NppiSize oSrcSize = {(int)oDeviceSrc.width(), (int)oDeviceSrc.height()};
+            NppiPoint oSrcOffset = {0, 0};
 
-//         saveImage(sResultFilename, oHostDst);
-//         std::cout << "Saved image: " << sResultFilename << std::endl;
+            // create struct with ROI size
+            NppiSize oSizeROI = {(int)oDeviceSrc.width(), (int)oDeviceSrc.height()};
+            // allocate device image of appropriately reduced size
+            npp::ImageNPP_8u_C1 oDeviceDst(oSizeROI.width, oSizeROI.height);
+            // set anchor point inside the mask to (oMaskSize.width / 2,
+            // oMaskSize.height / 2) It should round down when odd
+            NppiPoint oAnchor = {oMaskSize.width / 2, oMaskSize.height / 2};
 
-//         nppiFree(oDeviceSrc.data());
-//         nppiFree(oDeviceDst.data());
+            // run box filter
+            NPP_CHECK_NPP(nppiFilterBoxBorder_8u_C1R(
+                oDeviceSrc.data(), oDeviceSrc.pitch(), oSrcSize, oSrcOffset,
+                oDeviceDst.data(), oDeviceDst.pitch(), oSizeROI, oMaskSize, oAnchor,
+                NPP_BORDER_REPLICATE));
 
-//         exit(EXIT_SUCCESS);
-//     }
-// }
-// catch (npp::Exception &rException)
-// {
-// std::cerr << "Program error! The following exception occurred: \n";
-// std::cerr << rException << std::endl;
-// std::cerr << "Aborting." << std::endl;
+            // declare a host image for the result
+            npp::ImageCPU_8u_C1 oHostDst(oDeviceDst.size());
+            // and copy the device result data into it
+            oDeviceDst.copyTo(oHostDst.data(), oHostDst.pitch());
 
-// exit(EXIT_FAILURE);
-// }
-// catch (...)
-// {
-// std::cerr << "Program error! An unknow type of exception occurred. \n";
-// std::cerr << "Aborting." << std::endl;
+            saveImage(sResultFilename, oHostDst);
+            std::cout << "Saved image: " << sResultFilename << std::endl;
 
-// exit(EXIT_FAILURE);
-// return -1;
-// }
+            nppiFree(oDeviceSrc.data());
+            nppiFree(oDeviceDst.data());
+
+            // exit(EXIT_SUCCESS);
+        }
+        catch (npp::Exception &rException)
+        {
+            std::cerr << "Program error! The following exception occurred: \n";
+            std::cerr << rException << std::endl;
+            std::cerr << "Aborting." << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+        catch (...)
+        {
+            std::cerr << "Program error! An unknow type of exception occurred. \n";
+            std::cerr << "Aborting." << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -141,7 +149,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    std::vector<std::vector<std::string> > sequences(0,std::vector<std::string>());
     std::string basePath = "data/sequences/";
 
     std::cout << "basePath: " << basePath << std::endl;
@@ -175,9 +182,9 @@ int main(int argc, char *argv[])
                 // std::cout << "file not found: " << filename << std::endl;
                 break;
             }
-        }            
+        }
 
-        sequences.push_back(file_sequence);
+        processSequence(file_sequence);
     }
 
     // processImageBatch(sequence);
