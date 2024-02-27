@@ -78,6 +78,13 @@ void processSequence(const std::vector<std::string>& sequence)
             // oMaskSize.height / 2) It should round down when odd
             NppiPoint oAnchor = {oMaskSize.width / 2, oMaskSize.height / 2};
 
+            // check for error before running filter
+            cudaError_t code = cudaGetLastError();
+            if (code != cudaSuccess)
+            {
+                std::cerr << "Cuda status: " << cudaGetErrorString(code) << std::endl;
+            }
+
             // // run box filter
             // NPP_CHECK_NPP(nppiFilterBoxBorder_8u_C1R(
             //     oDeviceSrc.data(), oDeviceSrc.pitch(), oSrcSize, oSrcOffset,
@@ -85,10 +92,17 @@ void processSequence(const std::vector<std::string>& sequence)
             //     NPP_BORDER_REPLICATE));
 
             // run laplace filter
-            nppiFilterLaplace_8u_C1R(
+            NPP_CHECK_NPP(nppiFilterLaplace_8u_C1R(
                 oDeviceSrc.data(), oDeviceSrc.pitch(),
                 oDeviceDst.data(), oDeviceDst.pitch(),
-                oSizeROI, NPP_MASK_SIZE_5_X_5);
+                oSizeROI, NPP_MASK_SIZE_5_X_5));
+
+            // if (nppErr != NPP_SUCCESS)
+            // {
+            //     std::cerr << "NPP error: " << nppErr << std::endl;
+            // }
+
+            cudaDeviceSynchronize();
 
             // NppStatus 4673 nppiFilterBoxBorder_8u_C1R(const Npp8u *pSrc, Npp32s nSrcStep, NppiSize oSrcSize, NppiPoint oSrcOffset, Npp8u *pDst, Npp32s nDstStep, NppiSize oSizeROI,
             //                                           4674 NppiSize oMaskSize, NppiPoint oAnchor, NppiBorderType eBorderType);
